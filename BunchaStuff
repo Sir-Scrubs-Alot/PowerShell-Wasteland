@@ -1,0 +1,45 @@
+# Audits Active Directory to see if any Active Directory user account passwords are set to never expire
+get-aduser -filter * -Properties * | select name, samaccountname, Passwordneverexpires
+
+
+# Audit the default password policy for the domain
+Get-ADDefaultDomainPasswordPolicy
+
+
+# Get NTFS Permissions On A Directory
+Get-Acl -Path <pathToDirectory> | Out-GridView
+
+# Get NTFS Permissions On One Layer of SubDirectories
+Get-Childitem -Path <pathTodDirectory> | Get-ACL | Out-GridView
+
+
+
+# Copy users from one group and put them into another group 
+$originalGroup = "GRP-Marketing"
+$newGroup = "GRP-Accounting"
+$usersInOriginalGroup = (Get-ADGroupMember $originalGroup).samaccountname
+foreach ($user in $usersInOriginalGroup)
+{
+Add-ADGroupMember -Identity $newGroup -Members $user
+}
+# Verify that the new users are in the group
+(Get-ADGroupMember $newGroup).samaccountname
+
+
+
+
+# Add a list of users to a group
+$group = "GRP-Accounting"
+# Supply SamAccountNames
+$newUsers = "bbunny","dduck","efudd"
+foreach ($user in $newUsers)
+{
+Add-ADGroupMember -Identity $group -Members $user
+}
+
+
+# Audit to see if there are any Active Directory User accounts (enabled only) that are no in a group. Output the difference.  
+$aduserlist = (Get-Aduser -filter * -properties * | where enabled -eq true).name
+$serviceaccountmembers = (Get-ADGroupMember -Identity GRP-ServiceAccounts).name
+$compareaduserwithserviceaccounts = $aduserlist | ?{$serviceaccountmembers -notcontains $_}
+$compareaduserwithserviceaccounts
