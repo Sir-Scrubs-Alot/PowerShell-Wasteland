@@ -5,6 +5,27 @@ get-aduser -filter * -Properties * | select name, samaccountname, Passwordnevere
 # Audit the default password policy for the domain
 Get-ADDefaultDomainPasswordPolicy
 
+# Get all enabled AD User accounts whos password are older than 90 days
+Get-ADUser -Filter 'Enabled -eq $True' -Properties * | Where-Object {$_.PasswordLastSet -lt (Get-Date).adddays(-90)} |
+select Name,PasswordLastSet, Passwordexpired, Passwordneverexpires
+
+
+# Find Group Policies linked to Active Directory OU Using PowerShell
+$domain = (Get-ADDomain).DNSRoot
+Write-Output "Domain: $domain"
+$LinkedGPOs = Get-ADOrganizationalUnit -Filter 'Name -like "*Domain Controllers*"' | select -ExpandProperty LinkedGroupPolicyObjects            
+$GUIDRegex = "{[a-zA-Z0-9]{8}[-][a-zA-Z0-9]{4}[-][a-zA-Z0-9]{4}[-][a-zA-Z0-9]{4}[-][a-zA-Z0-9]{12}}"            
+            
+foreach($LinkedGPO in $LinkedGPOs) {            
+    $result = [Regex]::Match($LinkedGPO,$GUIDRegex);            
+    if($result.Success) {            
+        $GPOGuid = $result.Value.TrimStart("{").TrimEnd("}")            
+        $gpoapplied = (Get-GPO -Guid $GPOGuid).DisplayName
+        Write-Output "GPO Applied: $gpoapplied"        
+    }            
+            
+}
+
 
 # Get NTFS Permissions On A Directory
 Get-Acl -Path <pathToDirectory> | Out-GridView
