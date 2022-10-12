@@ -64,3 +64,12 @@ $aduserlist = (Get-Aduser -filter * -properties * | where enabled -eq true).name
 $serviceaccountmembers = (Get-ADGroupMember -Identity GRP-ServiceAccounts).name
 $compareaduserwithserviceaccounts = $aduserlist | ?{$serviceaccountmembers -notcontains $_}
 $compareaduserwithserviceaccounts
+
+
+
+
+# Add a printer by connecting to a printserver using PowerShell. Note, this method only works for the account that's running the powershell command
+Add-Printer -ConnectionName "\\printServer2\Event Printer"
+
+# Add a printer by connecting to a printserver using commandline or PowerShell. Note, this adds the printer to every account on the machine
+RUNDLL32 PRINTUI.DLL,PrintUIEntry /ga /n\\PrintServer2\"Event Printer"
