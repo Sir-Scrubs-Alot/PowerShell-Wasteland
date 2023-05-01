@@ -31,7 +31,7 @@ $body = "username=admin&secretkey=$encoded_password&ajax=1"
 $response = Invoke-WebRequest -Method Post -Uri "https://192.168.1.99/logincheck" -Headers $headers -Body $body -SessionVariable "MySession"
 
 $rawContent = $response.RawContent.ToString()
-if ($rawContent -match 'ccsrftoken="(.*?)"') {
+if ($rawContent -like '*ccsrftoken*') {
     $ccsrftoken = $Matches[1]
     Write-Host "ccsrftoken value: $ccsrftoken"
 } else {
