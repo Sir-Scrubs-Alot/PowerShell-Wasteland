@@ -1,7 +1,12 @@
 # Define your variables
 $firewallPassword = "Password1"
-$CompanyName = "This is the First Company"
-$PublicIP = "1.1.1.1"
+$CompanyName = "This is the Second Company"
+$PublicIP = "1.1.1.2"
+
+# URL encode the password. WIthout this any special characters will not be sent through properly
+Add-Type -AssemblyName System.Web
+$encoded_password = [System.Net.WebUtility]::UrlEncode($firewallPassword)
+Write-Host $encoded_password
 
 
 # Disable SSL Certification check
@@ -22,7 +27,7 @@ return true;
 # Create the login request and store the csrftoken
 $headers = @{}
 $headers.Add("Content-Type", "text/plain")
-$body = "username=admin&secretkey=$firewallPassword&ajax=1"
+$body = "username=admin&secretkey=$encoded_password&ajax=1"
 $response = Invoke-WebRequest -Method Post -Uri "https://192.168.1.99/logincheck" -Headers $headers -Body $body -SessionVariable "MySession"
 
 $rawContent = $response.RawContent.ToString()
@@ -57,4 +62,6 @@ $body3 = @"
 "@
 
 $response3 = Invoke-WebRequest -Method Post -Uri "https://192.168.1.99/api/v2/cmdb/firewall/addrgrp/External_Client_Firewall_Radius/member" -Headers $headers -Body $body3 -UseBasicParsing -Websession $Mysession
+
+
 
